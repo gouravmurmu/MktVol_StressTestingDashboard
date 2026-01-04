@@ -1,3 +1,13 @@
+---
+title: Market Risk Dashboard
+emoji: 📈
+colorFrom: gray
+colorTo: blue
+sdk: docker
+pinned: false
+app_port: 8501
+---
+
 # Market Volatility & Stress Testing Dashboard
 
 A "Finance-grade" interactive risk terminal for exploring market volatility, calculating VaR/CVaR, and running stress tests.
