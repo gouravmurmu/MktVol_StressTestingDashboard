@@ -4,5 +4,4 @@ pandas>=2.1.0
 numpy>=1.26.0
 scipy>=1.11.0
 plotly>=5.18.0
-ta-lib-binary  # Optional for simple MA, but we can stick to pandas for dependencies simplicity
 statsmodels>=0.14.0
