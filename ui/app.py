@@ -21,22 +21,10 @@ layout.apply_custom_style()
 
 # Sidebar
 st.sidebar.title("Risk Config")
-if 'ticker_list' not in st.session_state:
-    st.session_state.ticker_list = ['SPY', 'QQQ', 'GLD']
 
-new_ticker = st.sidebar.text_input("Add Ticker").strip().upper()
-
-if st.sidebar.button("Add Ticker"):
-    if new_ticker and new_ticker not in st.session_state.ticker_list:
-        st.session_state.ticker_list.append(new_ticker)
-        st.rerun()
-
-if st.sidebar.button("Clear All Tickers"):
-    st.session_state.ticker_list = []
-    st.rerun()
-
-st.sidebar.markdown(f"**Current Tickers:** {', '.join(st.session_state.ticker_list)}")
-tickers = st.session_state.ticker_list
+# Simple Single Ticker Input
+ticker = st.sidebar.text_input("Ticker Symbol", "SPY").strip().upper()
+tickers = [ticker] if ticker else []
 
 start_date = st.sidebar.date_input("Start Date", datetime.now() - timedelta(days=365*2))
 end_date = st.sidebar.date_input("End Date", datetime.now())
@@ -53,14 +41,21 @@ def load_data(tickers, start, end, interval):
 data_state = st.empty()
 
 if st.sidebar.button("Load Data", type="primary"):
-    with st.spinner("Fetching Market Data..."):
-        try:
-            prices, returns = load_data(tickers, start_date, end_date, interval)
-            st.session_state['prices'] = prices
-            st.session_state['returns'] = returns
-            st.sidebar.success("Data Loaded!")
-        except Exception as e:
-            st.sidebar.error(f"Error loading data: {e}")
+    if not tickers:
+        st.sidebar.error("Please enter a ticker symbol.")
+    else:
+        with st.spinner("Fetching Market Data..."):
+            try:
+                prices, returns = load_data(tickers, start_date, end_date, interval)
+                
+                if prices.empty:
+                    st.sidebar.error(f"No data found for {ticker}. Please check symbol and date range.")
+                else:
+                    st.session_state['prices'] = prices
+                    st.session_state['returns'] = returns
+                    st.sidebar.success("Data Loaded!")
+            except Exception as e:
+                st.sidebar.error(f"Error loading data: {e}")
 
 # Main Layout
 layout.render_header("Market Volatility & Stress Testing Terminal")
