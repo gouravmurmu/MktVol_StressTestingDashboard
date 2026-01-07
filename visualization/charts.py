@@ -11,7 +11,7 @@ class Visualizer:
         Plots price history. If regime is provided, backgrounds the plot.
         """
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=prices.index, y=prices, mode='lines', name='Price', line=dict(color='black', width=1)))
+        fig.add_trace(go.Scatter(x=prices.index, y=prices, mode='lines', name='Price', line=dict(color='#636EFA', width=2)))
         
         if regime_col is not None:
             # Map regimes to colors (1: Bull=Green, -1: Bear=Red)

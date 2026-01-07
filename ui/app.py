@@ -21,8 +21,22 @@ layout.apply_custom_style()
 
 # Sidebar
 st.sidebar.title("Risk Config")
-tickers_input = st.sidebar.text_input("Tickers (comma separated)", "SPY, QQQ, GLD")
-tickers = [t.strip().upper() for t in tickers_input.split(",")]
+if 'ticker_list' not in st.session_state:
+    st.session_state.ticker_list = ['SPY', 'QQQ', 'GLD']
+
+new_ticker = st.sidebar.text_input("Add Ticker").strip().upper()
+
+if st.sidebar.button("Add Ticker"):
+    if new_ticker and new_ticker not in st.session_state.ticker_list:
+        st.session_state.ticker_list.append(new_ticker)
+        st.rerun()
+
+if st.sidebar.button("Clear All Tickers"):
+    st.session_state.ticker_list = []
+    st.rerun()
+
+st.sidebar.markdown(f"**Current Tickers:** {', '.join(st.session_state.ticker_list)}")
+tickers = st.session_state.ticker_list
 
 start_date = st.sidebar.date_input("Start Date", datetime.now() - timedelta(days=365*2))
 end_date = st.sidebar.date_input("End Date", datetime.now())
