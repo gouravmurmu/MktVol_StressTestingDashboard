@@ -1,33 +1,41 @@
-import pandas as pd
+from typing import Dict
+
 import numpy as np
-from typing import Dict, List
+import pandas as pd
+
 
 class PortfolioManager:
-    def __init__(self):
-        pass
+    @staticmethod
+    def normalize_weights(columns, weights: Dict[str, float]) -> Dict[str, float]:
+        """Normalizes weights to sum to 1. Falls back to equal weight if all are zero."""
+        clean = {c: max(float(weights.get(c, 0.0)), 0.0) for c in columns}
+        total = sum(clean.values())
+        if total == 0:
+            return {c: 1.0 / len(columns) for c in columns}
+        return {c: w / total for c, w in clean.items()}
 
     def construct_portfolio(self, returns: pd.DataFrame, weights: Dict[str, float]) -> pd.Series:
         """
-        Constructs a portfolio return series based on weights.
-        Returns: pd.Series of portfolio returns.
+        Constructs a daily-rebalanced portfolio return series from asset log returns.
+        Log returns are converted to simple returns for aggregation, then back to log.
         """
         if returns.empty:
-            return pd.Series(dtype=float)
+            return pd.Series(dtype=float, name="Portfolio")
 
-        # Ensure weights match the columns in returns
-        # Normalize weights to sum to 1 if they don't
-        total_weight = sum(weights.values())
-        if total_weight == 0:
-             # Default to equal weight if invalid
-             normalized_weights = {col: 1.0/len(returns.columns) for col in returns.columns}
-        else:
-             normalized_weights = {k: v/total_weight for k, v in weights.items()}
+        w = self.normalize_weights(returns.columns, weights)
+        weight_vector = np.array([w[c] for c in returns.columns])
+        simple = np.expm1(returns)
+        port = np.log1p(simple.dot(weight_vector))
+        port.name = "Portfolio"
+        return port
 
-        # Create a weight vector aligned with columns
-        weight_vector = np.array([normalized_weights.get(col, 0.0) for col in returns.columns])
-        
-        # Calculate weighted sum
-        portfolio_returns = returns.dot(weight_vector)
-        portfolio_returns.name = "Portfolio"
-        
-        return portfolio_returns
+    @staticmethod
+    def risk_contributions(returns: pd.DataFrame, weights: Dict[str, float]) -> pd.Series:
+        """Percentage contribution of each asset to total portfolio variance."""
+        w = np.array([weights[c] for c in returns.columns])
+        cov = returns.cov().values
+        port_var = w @ cov @ w
+        if port_var <= 0:
+            return pd.Series(0.0, index=returns.columns)
+        contrib = w * (cov @ w) / port_var
+        return pd.Series(contrib, index=returns.columns)
