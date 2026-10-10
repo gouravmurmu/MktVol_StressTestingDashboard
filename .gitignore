@@ -33,10 +33,15 @@ ENV/
 # VS Code
 .vscode/
 
-# Streamlit
-.streamlit/
+# Streamlit (theme config is committed, secrets are not)
+.streamlit/secrets.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Test / tooling
+.pytest_cache/
+.ruff_cache/
+*.log
